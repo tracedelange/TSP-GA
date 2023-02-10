@@ -5,7 +5,7 @@ if __name__ == "__main__":
     coordinates, x, y = generate_cities(n_cities)
 
 
-
+    
 
     solution, gens = genetic_alg(coordinates, 2000, 100, 1)
 

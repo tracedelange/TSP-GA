@@ -19,11 +19,7 @@ def generate_cities(n_cities):
     coordinates = []
     for i in range(n_cities):
         coordinates.append((np.random.randint(0,100), np.random.randint(0,100)))
-
-    x = [coordinate[0] for coordinate in coordinates]
-    y = [coordinate[1] for coordinate in coordinates]
-    
-    return coordinates, x, y
+    return coordinates
 
 
 # Used to find an exact 100% Optimized solution for a given set of cities. Problem scales in exponential time as
@@ -32,15 +28,18 @@ def generate_cities(n_cities):
 # efficient solutions we will need to make use of heuristics.
 
 # clean this up to only take a set of coordinates? a little redundant to require x and y considering they are derivatices of coordinates
-def exact_solution(coordinates, x, y):
+def exact_solution(coordinates):
     
+    x, y = zip(*[(coordinate[0], coordinates[1]) for coordinate in coordinates])
     
     start = time.process_time()
 
     # Generate a list of all possible combinations or routes from point to point
     combs = itertools.permutations(coordinates, len(coordinates))
 
-    #Iterate through the permutation generator and append each uniquie route to 'routes'. Routes that are identical forward and backwards are removed since they are equal in distance.
+    #Iterate through the permutation generator and append each uniquie route to 'routes'.
+    #Routes that are identical forward and backwards are removed since they are equal in distance.
+    
     routes = []
     for p in combs:
         if p[0] <= p[-1]:
@@ -61,14 +60,23 @@ def exact_solution(coordinates, x, y):
     end = time.process_time()
     path_count = len(routes)
     process_time = str(end-start)
-    print(process_time)
-    print('Number of paths generated: ' + str(len(routes)))
     
     #Identify the path of shortest and longest distance
     optimum = min(routes, key = lambda t: t[(len(routes[0])-1)])
     worst = max(routes, key = lambda t: t[(len(routes[0])-1)])
     
-    return optimum, worst, x, y, path_count
+
+        
+    print('Processing time: ' + str(process_time) + " Seconds")
+    print('Number of paths generated: ' + str(len(routes)))
+    print('Longest solution length: ' + str(worst[(len(worst)-1)]))
+    print('Shortest solution length: ' + str(optimum[(len(worst)-1)]))
+
+    graph_route(coordinates, optimum)
+    plt.title('Optimum Route. Distance: ' + str(optimum[(len(worst)-1)]))
+    graph_route(coordinates, worst)
+    plt.title('Least Optimum Route: ' + str(worst[(len(worst)-1)]))
+    return optimum, worst
 
 
 # Given variables returned by the above function, create a matlab plot
@@ -100,8 +108,7 @@ def graph_solution(optimum, worst, x, y, path_count, n_cities):
 
 def graph_cities(coordinates):
 
-    x = [coordinate[0] for coordinate in coordinates]
-    y = [coordinate[1] for coordinate in coordinates]
+    x, y = zip(*[(coordinate[0], coordinates[1]) for coordinate in coordinates])
     
     fig, ax = plt.subplots(1, 1, figsize=(7.5,6))
 
@@ -111,6 +118,9 @@ def graph_cities(coordinates):
 
     #ax1.axes.xaxis.set_visible(False)
     #ax1.axes.yaxis.set_visible(False)
+
+    plt.xlim(0,100)
+    plt.ylim(0,100)
 
 
     fig.show()
@@ -124,8 +134,7 @@ def graph_cities(coordinates):
 # problem and solution
 def graph_route(coordinates, route):
 
-    x = [coordinate[0] for coordinate in coordinates]
-    y = [coordinate[1] for coordinate in coordinates]
+    x, y = zip(*[(coordinate[0], coordinates[1]) for coordinate in coordinates])
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,10))
 
@@ -143,7 +152,8 @@ def graph_route(coordinates, route):
             continue
     ax2.axis('equal')
     
-
+    plt.xlim(0,100)
+    plt.ylim(0,100)
 
     ax1.axes.xaxis.set_visible(False)
     ax1.axes.yaxis.set_visible(False)
@@ -155,6 +165,28 @@ def graph_route(coordinates, route):
     #image = plt.savefig(fig)
 
     return fig, ax1, ax2
+
+def graph_route_only(coordinates, route):
+
+    x, y = zip(*[(coordinate[0], coordinates[1]) for coordinate in coordinates])
+    
+    fig, ax = plt.subplots(1, 1, figsize=(7.5,6))
+
+    ax.plot(x, y, 'o', color='black');
+
+    for i in range(len(route)-1):
+        try:
+            connectpoints(ax, route[i][0],route[i][1],route[i+1][0],route[i+1][1])
+        except:
+            continue
+        
+    plt.xlim(0,100)
+    plt.ylim(0,100)
+
+    fig.show()
+
+
+    return fig, ax
 
 # Genetic Algorithm Functions:
 
